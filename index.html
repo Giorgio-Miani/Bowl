@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Il mio ricettario</title>
+<title>Bowl</title>
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#c4562b">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Ricettario"><link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Bowl"><link rel="apple-touch-icon" href="icon-180.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#faf6f0;--card:#fff;--tx:#2b2420;--mu:#8a7d72;--ac:#c4562b;--ln:#eadfd2;--ch:#f1e6d8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -51,7 +51,7 @@ F.onAuthStateChanged(F.auth,u=>{if(unsub)unsub();unsub=null;started=false;
 if(!u){uid=null;R=[];return login()}
 uid=u.uid;unsub=F.onSnapshot(F.collection(fdb,'users',uid,'recipes'),sn=>{R=sn.docs.map(x=>x.data());R.forEach(r=>P.set(r.id,new Set(r.steps.map(t=>t.pid).filter(Boolean))));
 if(!started){started=true;home()}else if($('#list'))list()},e=>{$('#app').innerHTML='<p>Errore database: '+esc(e.code||e.message)+'</p><button onclick="logout()">Esci</button>'})})}
-function login(m){$('#app').innerHTML=`<h1>🍳 Il mio ricettario</h1><p class="mu">Accedi per vedere le tue ricette.</p><p><button class="pri" onclick="signIn()">Accedi con Google</button></p><p class="mu" id="lm">${esc(m||'')}</p>`}
+function login(m){$('#app').innerHTML=`<h1>📖 Bowl</h1><p class="mu">Accedi per vedere le tue ricette.</p><p><button class="pri" onclick="signIn()">Accedi con Google</button></p><p class="mu" id="lm">${esc(m||'')}</p>`}
 async function signIn(){try{await F.signInWithPopup(F.auth,new F.GoogleAuthProvider())}catch(e){$('#lm').textContent='Errore: '+(e.code||e.message)}}
 function logout(){F.signOut(F.auth)}
 const pdoc=id=>F.doc(fdb,'users',uid,'photos',id),rdoc=id=>F.doc(fdb,'users',uid,'recipes',id);
@@ -66,7 +66,7 @@ const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
 function home(){cur=null;
-$('#app').innerHTML=`<div class="bar"><h1>🍳 Il mio ricettario</h1><button onclick="backup()">💾 Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
+$('#app').innerHTML=`<div class="bar"><h1>📖 Bowl</h1><button onclick="backup()">💾 Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
 function list(){
 $('#chips').innerHTML=['',...cats()].map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${c?esc(c):'Tutte'}</button>`).join('');
