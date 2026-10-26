@@ -26,6 +26,7 @@ button{border:0;border-radius:10px;padding:10px 14px;background:var(--ch);cursor
 .card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin:10px 0;cursor:pointer}
 .card b{font:700 18px Georgia,serif}.mu{color:var(--mu);font-size:14px}
 .fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;font-size:30px;padding:0;box-shadow:0 4px 14px #0004}
+.fm{position:fixed;right:18px;bottom:calc(86px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;align-items:flex-end}.fm[hidden]{display:none}.fm button{background:var(--card);border:1px solid var(--ln);box-shadow:0 4px 14px #0003;padding:12px 18px;white-space:nowrap}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0}
 .row.top{align-items:flex-start}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -66,8 +67,9 @@ const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
 function home(){if(window.pend)return location.reload();cur=null;
-$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1><span style="white-space:nowrap"><button onclick="fromText()">Da testo</button> <button onclick="backup()">Backup</button></span></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
+$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1><button onclick="backup()">Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><div class="fm" id="fm" hidden><button onclick="fromText()">Bozza da testo</button><button onclick="edit()">Nuova bozza</button></div><button class="fab pri" id="fb" onclick="fab()" aria-label="Aggiungi">+</button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
+function fab(){const m=$('#fm');m.hidden=!m.hidden;$('#fb').textContent=m.hidden?'+':'×'}
 function list(){
 $('#chips').innerHTML=['',...cats()].map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${c?esc(c):'Tutte'}</button>`).join('');
 $$('#chips button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;list()});
