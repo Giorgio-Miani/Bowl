@@ -51,7 +51,7 @@ F.onAuthStateChanged(F.auth,u=>{if(unsub)unsub();unsub=null;started=false;
 if(!u){uid=null;R=[];return login()}
 uid=u.uid;unsub=F.onSnapshot(F.collection(fdb,'users',uid,'recipes'),sn=>{R=sn.docs.map(x=>x.data());R.forEach(r=>P.set(r.id,new Set(r.steps.map(t=>t.pid).filter(Boolean))));
 if(!started){started=true;home()}else if($('#list'))list()},e=>{$('#app').innerHTML='<p>Errore database: '+esc(e.code||e.message)+'</p><button onclick="logout()">Esci</button>'})})}
-function login(m){$('#app').innerHTML=`<h1>📖 Bowl</h1><p class="mu">Accedi per vedere le tue ricette.</p><p><button class="pri" onclick="signIn()">Accedi con Google</button></p><p class="mu" id="lm">${esc(m||'')}</p>`}
+function login(m){$('#app').innerHTML=`<h1>Bowl</h1><p class="mu">Accedi per vedere le tue ricette.</p><p><button class="pri" onclick="signIn()">Accedi con Google</button></p><p class="mu" id="lm">${esc(m||'')}</p>`}
 async function signIn(){try{await F.signInWithPopup(F.auth,new F.GoogleAuthProvider())}catch(e){$('#lm').textContent='Errore: '+(e.code||e.message)}}
 function logout(){F.signOut(F.auth)}
 const pdoc=id=>F.doc(fdb,'users',uid,'photos',id),rdoc=id=>F.doc(fdb,'users',uid,'recipes',id);
@@ -66,7 +66,7 @@ const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
 function home(){if(window.pend)return location.reload();cur=null;
-$('#app').innerHTML=`<div class="bar"><h1>📖 Bowl</h1><span style="white-space:nowrap"><button onclick="fromText()">📋 Da testo</button> <button onclick="backup()">💾 Backup</button></span></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
+$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1><span style="white-space:nowrap"><button onclick="fromText()">Da testo</button> <button onclick="backup()">Backup</button></span></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
 function list(){
 $('#chips').innerHTML=['',...cats()].map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${c?esc(c):'Tutte'}</button>`).join('');
@@ -78,14 +78,14 @@ $$('.card').forEach(c=>c.onclick=()=>show(c.dataset.id))}
 
 function show(id){cur=R.find(r=>r.id===id);if(!cur)return home();sv=cur.base;delArm=false;drawShow();const c=cur;loadPhotos(c).then(()=>{if(cur===c)drawShow()})}
 function drawShow(){const r=cur,k=sv/r.base;
-$('#app').innerHTML=`<div class="bar"><button onclick="home()">← Indietro</button><button onclick="edit('${r.id}')">✏️ Modifica</button></div>
+$('#app').innerHTML=`<div class="bar"><button onclick="home()">← Indietro</button><button onclick="edit('${r.id}')">Modifica</button></div>
 <h1>${esc(r.title)}</h1><div>${r.cats.map(c=>`<span class="chip">${esc(c)}</span> `).join('')}</div>
 <h2>Ingredienti</h2><div class="sv"><button onclick="sv=Math.max(1,sv-1);drawShow()">−</button><span>${sv} ${sv===1?'porzione':'porzioni'}</span><button onclick="sv++;drawShow()">+</button></div>
 ${r.ing.map(i=>`<div class="ing"><span>${esc(i.n)}</span><b>${i.q!==''&&!isNaN(i.q)?num(i.q*k):''} ${esc(i.u)}</b></div>`).join('')}
 <h2>Procedimento</h2>${r.steps.map((s,i)=>`<div class="step"><span class="n">${i+1}</span><span class="pre">${esc(s.t)}</span>${s.p?`<img src="${s.p}" alt="">`:''}</div>`).join('')}
 ${r.cons?`<h2>Conservazione</h2><div class="pre">${esc(r.cons)}</div>`:''}
 ${r.extra.map(e=>`<h2>${esc(e.t)}</h2><div class="pre">${esc(e.x)}</div>`).join('')}
-<p style="margin-top:30px"><button onclick="rm()">${delArm?'Tocca ancora per eliminare':'🗑 Elimina ricetta'}</button></p>`}
+<p style="margin-top:30px"><button onclick="rm()">${delArm?'Tocca ancora per eliminare':'Elimina ricetta'}</button></p>`}
 function rm(){if(!delArm){delArm=true;return drawShow()}const r=cur;R=R.filter(x=>x.id!==r.id);del(r);home()}
 
 async function edit(id){const r=R.find(x=>x.id===id);if(r)await loadPhotos(r);
@@ -101,9 +101,9 @@ $('#app').innerHTML=`<div class="bar"><button onclick="d.title?show(d.id)||0:hom
 <h2>Categorie</h2><input id="c" placeholder="es. dolce, salato, aperitivo" value="${esc(d.cats.join(', '))}">
 <div class="chips">${cats().map(c=>`<button class="chip" onclick="addCat('${esc(c).replace(/'/g,"\\'")}')">${esc(c)}</button>`).join('')}</div>
 <h2>Ingredienti</h2><div class="row"><span>Quantità per</span><input id="b" type="number" min="1" style="width:70px" value="${d.base}"><span>porzioni</span></div>
-${d.ing.map((i,x)=>`<div class="row ir"><input inputmode="decimal" placeholder="Qtà" style="width:68px" value="${esc(i.q)}"><input placeholder="Unità" style="width:78px" value="${esc(i.u)}"><input placeholder="Ingrediente" value="${esc(i.n)}"><button onclick="sync();d.ing.splice(${x},1);drawEdit()">✕</button></div>`).join('')}
+${d.ing.map((i,x)=>`<div class="row ir"><input inputmode="decimal" placeholder="Qtà" style="width:68px" value="${esc(i.q)}"><input placeholder="Unità" style="width:78px" value="${esc(i.u)}"><input placeholder="Ingrediente" value="${esc(i.n)}"><button onclick="sync();d.ing.splice(${x},1);drawEdit()">×</button></div>`).join('')}
 <button onclick="sync();d.ing.push({q:'',u:'',n:''});drawEdit()">+ Ingrediente</button>
-<h2>Passaggi</h2>${d.steps.map((s,x)=>`<div class="step st"><div class="bar"><b>Passo ${x+1}</b><button onclick="sync();d.steps.splice(${x},1);drawEdit()">✕</button></div><textarea placeholder="Descrivi il passaggio…">${esc(s.t)}</textarea>${s.p?`<img src="${s.p}" alt=""><button style="margin-top:8px" onclick="sync();d.steps[${x}].p='';d.steps[${x}].pid='';drawEdit()">Rimuovi foto</button>`:`<label class="chip" style="display:inline-block;margin-top:8px">📷 Aggiungi foto<input type="file" accept="image/*" hidden onchange="photo(this,${x})"></label>`}</div>`).join('')}
+<h2>Passaggi</h2>${d.steps.map((s,x)=>`<div class="step st"><div class="bar"><b>Passo ${x+1}</b><button onclick="sync();d.steps.splice(${x},1);drawEdit()">×</button></div><textarea placeholder="Descrivi il passaggio…">${esc(s.t)}</textarea>${s.p?`<img src="${s.p}" alt=""><button style="margin-top:8px" onclick="sync();d.steps[${x}].p='';d.steps[${x}].pid='';drawEdit()">Rimuovi foto</button>`:`<label class="chip" style="display:inline-block;margin-top:8px">Aggiungi foto<input type="file" accept="image/*" hidden onchange="photo(this,${x})"></label>`}</div>`).join('')}
 <button onclick="sync();d.steps.push({t:'',p:''});drawEdit()">+ Passaggio</button>
 <h2>Conservazione</h2><textarea id="cons" placeholder="Come e per quanto si conserva…">${esc(d.cons)}</textarea>
 <h2>Altre sezioni</h2>${d.extra.map((e,x)=>`<div class="step ex"><input placeholder="Titolo (es. Consigli, Varianti)" value="${esc(e.t)}" style="margin-bottom:8px"><textarea>${esc(e.x)}</textarea><button style="margin-top:8px" onclick="sync();d.extra.splice(${x},1);drawEdit()">Rimuovi sezione</button></div>`).join('')}
@@ -153,7 +153,7 @@ function backup(){$('#app').innerHTML=`<div class="bar"><button onclick="home()"
 <h2>Esporta</h2><p><button class="pri" onclick="exJ()">Completo (.json, con foto)</button></p><p><button onclick="exX()">Leggibile (.xlsx, senza foto)</button></p>
 <h2>Account</h2><p><button onclick="logout()">Esci</button></p><h2>Importa</h2><p class="mu">Le ricette con lo stesso titolo vengono sostituite, le altre aggiunte.</p><label class="chip" style="display:inline-block">Scegli file .json o .xlsx<input type="file" accept=".json,.xlsx" hidden onchange="imp(this)"></label><p id="msg"></p>`}
 const msg=t=>$('#msg').textContent=t,today=()=>new Date().toISOString().slice(0,10);
-async function dl(name,data){try{if(DL)await DL.save({filename:name,data});else{const u=URL.createObjectURL(new Blob([data])),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}msg('Fatto ✓')}catch(e){msg(e.code==='declined'?'Annullato.':'Errore: '+(e.message||e.code))}}
+async function dl(name,data){try{if(DL)await DL.save({filename:name,data});else{const u=URL.createObjectURL(new Blob([data])),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}msg('Fatto')}catch(e){msg(e.code==='declined'?'Annullato.':'Errore: '+(e.message||e.code))}}
 async function exJ(){msg('Preparo il file…');for(const r of R)await loadPhotos(r);dl(`ricettario-${today()}.json`,JSON.stringify({v:1,recipes:R.map(r=>({...r,steps:r.steps.map(t=>({t:t.t,p:t.p||''}))}))}))}
 function exX(){const rows=R.map(r=>({Titolo:r.title,Categorie:r.cats.join(', '),Porzioni:r.base,Ingredienti:r.ing.map(i=>[i.q,i.u,i.n].join(' | ')).join('\n'),Procedimento:r.steps.map((s,i)=>(i+1)+'. '+s.t).join('\n'),Conservazione:r.cons,Extra:r.extra.map(e=>e.t+': '+e.x).join('\n\n')}));
 const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:28},{wch:20},{wch:9},{wch:40},{wch:70},{wch:35},{wch:40}];
@@ -171,7 +171,7 @@ let n=0;for(const r of L){if(!r.title||!Array.isArray(r.ing)||!Array.isArray(r.s
 const i=R.findIndex(x=>x.title.toLowerCase()===r.title.toLowerCase());
 if(i>=0){await loadPhotos(R[i]);r.id=R[i].id;if(R[i].steps.length===r.steps.length)r.steps.forEach((s,k)=>{if(!s.p)s.p=R[i].steps[k].p||''});R[i]=r}else{if(R.some(x=>x.id===r.id))r.id=nid();R.push(r)}
 save(r);n++}
-msg(n+' ricette importate ✓')}catch(e){msg('File non valido.')}inp.value=''}
+msg(n+' ricette importate')}catch(e){msg('File non valido.')}inp.value=''}
 (async()=>{try{DL=await claude.use("downloads")}catch(e){}})();
 (async()=>{$('#app').textContent='Caricamento…';try{await initFb()}catch(e){$('#app').innerHTML='<p>Impossibile caricare Firebase. Serve la connessione la prima volta.</p>'}})();
 if('serviceWorker' in navigator){let had=!!navigator.serviceWorker.controller;
