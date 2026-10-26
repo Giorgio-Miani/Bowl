@@ -1,4 +1,4 @@
-const V='ricettario-v3',A=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'],X='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+const V='ricettario-v4',A=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'],X='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 self.addEventListener('install',e=>{e.waitUntil((async()=>{const c=await caches.open(V);await c.addAll(A);try{await c.put(X,await fetch(X,{mode:'no-cors'}))}catch(_){}self.skipWaiting()})())});
 self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const k of await caches.keys())if(k!==V)await caches.delete(k);await self.clients.claim()})()));
 const OK=u=>u.origin===location.origin||u.hostname==='cdnjs.cloudflare.com'||u.pathname.startsWith('/firebasejs/');

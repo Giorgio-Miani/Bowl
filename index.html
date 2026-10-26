@@ -66,7 +66,7 @@ const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
 function home(){cur=null;
-$('#app').innerHTML=`<div class="bar"><h1>📖 Bowl</h1><button onclick="backup()">💾 Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
+$('#app').innerHTML=`<div class="bar"><h1>📖 Bowl</h1><span style="white-space:nowrap"><button onclick="fromText()">📋 Da testo</button> <button onclick="backup()">💾 Backup</button></span></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
 function list(){
 $('#chips').innerHTML=['',...cats()].map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${c?esc(c):'Tutte'}</button>`).join('');
@@ -114,6 +114,40 @@ im.onload=()=>{const s=Math.min(1,900/Math.max(im.width,im.height)),c=document.c
 async function done(){sync();if(!d.title){alert('Inserisci un titolo');return}
 d.ing=d.ing.filter(i=>i.n||i.q);d.steps=d.steps.filter(s=>s.t||s.p||s.pid);d.extra=d.extra.filter(e=>e.t||e.x);
 const i=R.findIndex(r=>r.id===d.id);i<0?R.push(d):R[i]=d;save(d);show(d.id)}
+const FR={'½':.5,'¼':.25,'¾':.75};
+const H=[[/^ingredienti/i,'i'],[/^(procedimento|preparazione|come si prepara|come si fa|istruzioni|metodo|esecuzione)/i,'s'],[/^(conservazione|come conservare)/i,'c'],[/^(consigli|consiglio|suggerimenti|note|nota|varianti|trucchetto)/i,'x']];
+function pIng(l,force){let m;
+if((m=l.match(/^(\d+\/\d+|\d+(?:[.,]\d+)?|[½¼¾])\s*(kg|g|gr|grammi|ml|l|lt|litri?|cl|dl|cucchiai[oa]?|cucchiaini?|tazz[ae]|bicchier[ei]|pizzic[oi]|spicch[io]|fett[ae])?\b\s*(?:di\s+|d')?(.+)$/i))&&!/^(minut|or[ae]\b|second|gradi|°|[-–]\d)/i.test(m[3])){
+let q=m[1];q=FR[q]!==undefined?FR[q]:q.includes('/')?+(q.split('/')[0]/q.split('/')[1]).toFixed(2):q.replace(',','.');
+let u=(m[2]||'').toLowerCase();u={gr:'g',grammi:'g',lt:'l',litri:'l',litro:'l'}[u]||u;return{q:String(q),u,n:m[3].trim()}}
+if((m=l.match(/^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(kg|g|gr|ml|l|lt|cl)$/i)))return{q:m[2].replace(',','.'),u:{gr:'g',lt:'l'}[m[3].toLowerCase()]||m[3].toLowerCase(),n:m[1]};
+if(/(\bq\.?\s?b\.?|quanto basta)$/i.test(l)||force)return{q:'',u:'',n:l};return null}
+function parseRec(raw){
+let L=raw.replace(/\r/g,'').replace(/(\d)\uFE0F?\u20E3/g,'$1. ').replace(/#[\p{L}\p{N}_]+/gu,'').replace(/@[\w.]+/g,'').split('\n')
+.map(l=>l.replace(/[\p{Extended_Pictographic}\uFE0F\u200d\u20E3]/gu,'').replace(/^[\s\-•*·–—▪]+/,'').replace(/\s+/g,' ').trim()).filter(Boolean);
+const isH=l=>l.length<60&&H.find(h=>h[0].test(l));
+let title='';if(L.length&&L[0].length<=70&&!isH(L[0])&&!pIng(L[0])&&!/^\d+[.)]\s/.test(L[0]))title=L.shift().replace(/[!:.\s]+$/,'');
+let sec='',ing=[],st=[],cons=[],ex=[],intro=[],base=2,cx=null;
+const step=l=>st.push(l.replace(/^(\d+[.)]|step\s*\d+[:.)]?)\s*/i,''));
+for(const l of L){const h=isH(l),b=l.match(/\b(\d+)\s*(persone|porzioni|pers)\b/i);
+if(h){sec=h[1];let rest=l.replace(h[0],'').replace(/^[a-zà-ù]*/i,m=>sec==='x'||sec==='s'||sec==='i'||sec==='c'?'':m).replace(/^[\s:–-]+/,'');
+if(b){base=+b[1];rest='';}
+if(sec==='x'){cx={t:l.match(h[0])[0].replace(/^./,c=>c.toUpperCase()),x:[]};ex.push(cx)}
+if(rest){if(sec==='c')cons.push(rest);else if(sec==='x')cx.x.push(rest);else if(sec==='s')step(rest);else if(sec==='i')ing.push(pIng(rest,1))}continue}
+if(b&&l.length<45&&!pIng(l)){base=+b[1];continue}
+if(sec==='i'){ing.push(pIng(l,1));continue}
+if(sec==='s'){step(l);continue}
+if(sec==='c'){cons.push(l);continue}
+if(sec==='x'){cx.x.push(l);continue}
+if(/^(\d+[.)]|step\s*\d+)\s*/i.test(l)&&/^(\d+[.)]|step\s*\d+)\s+\S/i.test(l)){step(l);continue}
+const p=pIng(l);if(p){ing.push(p);continue}
+if(ing.length||st.length)step(l);else intro.push(l)}
+if(st.length===1&&st[0].length>220)st=st[0].match(/[^.!?]+[.!?]*/g).map(s=>s.trim()).filter(Boolean);
+const extra=ex.filter(e=>e.x.length).map(e=>({t:e.t,x:e.x.join('\n')}));if(intro.length)extra.push({t:'Note',x:intro.join('\n')});
+return{id:'r'+Date.now(),title,cats:[],base,ing:ing.length?ing:[{q:'',u:'',n:''}],steps:(st.length?st:['']).map(t=>({t,p:''})),cons:cons.join('\n'),extra}}
+
+function fromText(){cur=null;$('#app').innerHTML=`<div class="bar"><button onclick="home()">← Indietro</button><button class="pri" onclick="mk()">Crea bozza</button></div><h1>Da testo</h1><p class="mu">Incolla il testo della ricetta (ad esempio la descrizione di un post). Creo una bozza che potrai correggere prima di salvare.</p><textarea id="tx" style="min-height:280px" placeholder="Incolla qui…"></textarea>`}
+function mk(){const t=$('#tx').value.trim();if(!t)return;d=parseRec(t);drawEdit()}
 let DL=null;
 function backup(){$('#app').innerHTML=`<div class="bar"><button onclick="home()">← Indietro</button></div><h1>Backup</h1><p class="mu">${R.length} ricette salvate.</p>
 <h2>Esporta</h2><p><button class="pri" onclick="exJ()">Completo (.json, con foto)</button></p><p><button onclick="exX()">Leggibile (.xlsx, senza foto)</button></p>
