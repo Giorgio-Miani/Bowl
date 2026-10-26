@@ -65,7 +65,7 @@ const num=n=>(Math.round(n*100)/100).toLocaleString('it',{maximumFractionDigits:
 const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
-function home(){cur=null;
+function home(){if(window.pend)return location.reload();cur=null;
 $('#app').innerHTML=`<div class="bar"><h1>📖 Bowl</h1><span style="white-space:nowrap"><button onclick="fromText()">📋 Da testo</button> <button onclick="backup()">💾 Backup</button></span></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><button class="fab pri" onclick="edit()" aria-label="Nuova ricetta">+</button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
 function list(){
@@ -174,4 +174,7 @@ save(r);n++}
 msg(n+' ricette importate ✓')}catch(e){msg('File non valido.')}inp.value=''}
 (async()=>{try{DL=await claude.use("downloads")}catch(e){}})();
 (async()=>{$('#app').textContent='Caricamento…';try{await initFb()}catch(e){$('#app').innerHTML='<p>Impossibile caricare Firebase. Serve la connessione la prima volta.</p>'}})();
+if('serviceWorker' in navigator){let had=!!navigator.serviceWorker.controller;
+navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had){had=true;return}if($('#list'))location.reload();else window.pend=true});
+addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(g=>document.addEventListener('visibilitychange',()=>{if(!document.hidden)g.update().catch(()=>{})})).catch(()=>{}))}
 </script></body></html>
