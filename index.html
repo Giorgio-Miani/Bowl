@@ -26,7 +26,11 @@ button{border:0;border-radius:10px;padding:10px 14px;background:var(--ch);cursor
 .card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin:10px 0;cursor:pointer}
 .card b{font:700 18px Georgia,serif}.mu{color:var(--mu);font-size:14px}
 .fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;font-size:30px;padding:0;box-shadow:0 4px 14px #0004}
-.fm{position:fixed;right:18px;bottom:calc(86px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;align-items:flex-end}.fm[hidden]{display:none}.fm button{background:var(--card);border:1px solid var(--ln);box-shadow:0 4px 14px #0003;padding:12px 18px;white-space:nowrap}
+#wh .wb{display:none;position:fixed;inset:0;z-index:10;background:#0003}#wh.open .wb{display:block}
+#wh .wd{position:fixed;right:0;bottom:0;width:260px;height:260px;z-index:11;pointer-events:none;background:radial-gradient(circle 260px at 100% 100%,var(--ch) 55%,transparent 100%);transform:scale(0);transform-origin:100% 100%;transition:transform .25s ease}#wh.open .wd{transform:scale(1)}
+#wh .wi{position:fixed;right:47px;bottom:calc(47px + env(safe-area-inset-bottom,0px));z-index:12;white-space:nowrap;background:var(--card);border:1px solid var(--ln);box-shadow:0 4px 14px #0003;border-radius:99px;padding:12px 18px;opacity:0;pointer-events:none;transform:translate(50%,50%) scale(.4);transition:transform .25s ease,opacity .2s}
+#wh.open .wi{opacity:1;pointer-events:auto;transform:translate(calc(50% + var(--x)),calc(50% + var(--y))) scale(1)}
+#fb{z-index:12;transition:transform .25s}#wh.open~#fb{transform:rotate(45deg)}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0}
 .row.top{align-items:flex-start}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -67,9 +71,9 @@ const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
 function home(){if(window.pend)return location.reload();cur=null;
-$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1><button onclick="backup()">Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><div class="fm" id="fm" hidden><button onclick="fromText()">Bozza da testo</button><button onclick="edit()">Nuova bozza</button></div><button class="fab pri" id="fb" onclick="fab()" aria-label="Aggiungi">+</button>`;
+$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1><button onclick="backup()">Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><div id="wh"><div class="wb" onclick="fab()"></div><div class="wd"></div><button class="wi" style="--x:-112px;--y:-48px" onclick="fromText()">Bozza da testo</button><button class="wi" style="--x:-48px;--y:-112px" onclick="edit()">Nuova bozza</button></div><button class="fab pri" id="fb" onclick="fab()" aria-label="Aggiungi">+</button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
-function fab(){const m=$('#fm');m.hidden=!m.hidden;$('#fb').textContent=m.hidden?'+':'×'}
+function fab(){$('#wh').classList.toggle('open')}
 function list(){
 $('#chips').innerHTML=['',...cats()].map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${c?esc(c):'Tutte'}</button>`).join('');
 $$('#chips button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;list()});
