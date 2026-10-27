@@ -65,7 +65,7 @@ if(!u){uid=null;R=[];return login()}
 uid=u.uid;unsub=F.onSnapshot(F.collection(fdb,'users',uid,'recipes'),sn=>{R=sn.docs.map(x=>x.data());R.forEach(r=>P.set(r.id,new Set(r.steps.map(t=>t.pid).filter(Boolean))));
 if(!started){started=true;home()}else if($('#list'))list()},e=>{$('#app').innerHTML='<p>Errore database: '+esc(e.code||e.message)+'</p><button onclick="logout()">Esci</button>'})})}
 function login(m){$('#app').innerHTML=`<h1>Bowl</h1><p class="mu">Accedi per vedere le tue ricette.</p><p><button class="pri" onclick="signIn()">Accedi con Google</button></p><p class="mu" id="lm">${esc(m||'')}</p>`}
-async function signIn(){try{await F.signInWithPopup(F.auth,new F.GoogleAuthProvider())}catch(e){$('#lm').textContent='Errore: '+(e.code||e.message)}}
+async function signIn(){try{const g=new F.GoogleAuthProvider();g.setCustomParameters({prompt:'select_account'});await F.signInWithPopup(F.auth,g)}catch(e){$('#lm').textContent='Errore: '+(e.code||e.message)}}
 function logout(){F.signOut(F.auth)}
 const pdoc=id=>F.doc(fdb,'users',uid,'photos',id),rdoc=id=>F.doc(fdb,'users',uid,'recipes',id);
 async function loadPhotos(r){await Promise.all(r.steps.map(async t=>{if(t.pid&&!t.p){try{const x=await F.getDoc(pdoc(t.pid));if(x.exists())t.p=x.data().d}catch(e){}}}))}
