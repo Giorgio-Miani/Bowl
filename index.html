@@ -26,11 +26,15 @@ button{border:0;border-radius:10px;padding:10px 14px;background:var(--ch);cursor
 .card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin:10px 0;cursor:pointer}
 .card b{font:700 18px Georgia,serif}.mu{color:var(--mu);font-size:14px}
 .fab{position:fixed;right:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;font-size:30px;padding:0;box-shadow:0 4px 14px #0004}
-#wh .wb{display:none;position:fixed;inset:0;z-index:10;background:#0003}#wh.open .wb{display:block}
-#wh .wd{position:fixed;right:0;bottom:0;width:260px;height:260px;z-index:11;pointer-events:none;background:radial-gradient(circle 260px at 100% 100%,var(--ch) 55%,transparent 100%);transform:scale(0);transform-origin:100% 100%;transition:transform .25s ease}#wh.open .wd{transform:scale(1)}
-#wh .wi{position:fixed;right:47px;bottom:calc(47px + env(safe-area-inset-bottom,0px));z-index:12;white-space:nowrap;background:var(--card);border:1px solid var(--ln);box-shadow:0 4px 14px #0003;border-radius:99px;padding:12px 18px;opacity:0;pointer-events:none;transform:translate(50%,50%) scale(.4);transition:transform .25s ease,opacity .2s}
-#wh.open .wi{opacity:1;pointer-events:auto;transform:translate(calc(50% + var(--x)),calc(50% + var(--y))) scale(1)}
-#fb{z-index:12;transition:transform .25s}#wh.open~#fb{transform:rotate(45deg)}
+.wh .wb{display:none;position:fixed;inset:0;z-index:10;background:#0003}.wh.open .wb{display:block}
+.wh .wd{position:fixed;bottom:0;z-index:11;pointer-events:none;transform:scale(0);transition:transform .25s ease}.wh.open .wd{transform:scale(1)}
+.wh .wi{position:fixed;bottom:calc(47px + env(safe-area-inset-bottom,0px));z-index:12;white-space:nowrap;background:var(--card);border:1px solid var(--ln);box-shadow:0 4px 14px #0003;border-radius:99px;padding:12px 18px;opacity:0;pointer-events:none;transition:transform .25s ease,opacity .2s}.wh.open .wi{opacity:1;pointer-events:auto}
+#wh .wd{right:0;width:260px;height:260px;background:radial-gradient(circle 260px at 100% 100%,var(--ch) 55%,transparent 100%);transform-origin:100% 100%}
+#wh .wi{right:47px;transform:translate(50%,50%) scale(.4)}#wh.open .wi{transform:translate(calc(50% + var(--x)),calc(50% + var(--y))) scale(1)}
+#bh .wd{left:0;width:300px;height:300px;background:radial-gradient(circle 300px at 0 100%,var(--ch) 55%,transparent 100%);transform-origin:0 100%}
+#bh .wi{left:47px;transform:translate(-50%,50%) scale(.4)}#bh.open .wi{transform:translate(calc(-50% + var(--x)),calc(50% + var(--y))) scale(1)}
+#fb,#bk{z-index:12;transition:transform .25s}#wh.open~#fb{transform:rotate(45deg)}#bk{right:auto;left:18px}#bk svg{display:block;margin:auto}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:30;max-width:80%;font-size:14px;display:none}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0}
 .row.top{align-items:flex-start}
 .bar{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -71,9 +75,10 @@ const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n).join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
 function home(){if(window.pend)return location.reload();cur=null;
-$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1><button onclick="backup()">Backup</button></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><div id="wh"><div class="wb" onclick="fab()"></div><div class="wd"></div><button class="wi" style="--x:-112px;--y:-48px" onclick="fromText()">Bozza da testo</button><button class="wi" style="--x:-48px;--y:-112px" onclick="edit()">Nuova bozza</button></div><button class="fab pri" id="fb" onclick="fab()" aria-label="Aggiungi">+</button>`;
+$('#app').innerHTML=`<div class="bar"><h1>Bowl</h1></div><input id="q" type="search" placeholder="Cerca in titolo, ingredienti, procedimento…" value="${esc(q)}"><div class="chips" id="chips"></div><div id="list"></div><div class="wh" id="wh"><div class="wb" onclick="fab()"></div><div class="wd"></div><button class="wi" style="--x:-112px;--y:-48px" onclick="fab();fromText()">Bozza da testo</button><button class="wi" style="--x:-48px;--y:-112px" onclick="fab();edit()">Nuova bozza</button></div><button class="fab pri" id="fb" onclick="fab('wh')" aria-label="Aggiungi">+</button><div class="wh" id="bh"><div class="wb" onclick="fab()"></div><div class="wd"></div><button class="wi" style="--x:130px;--y:-44px" onclick="fab();exJ()">Completo (.json)</button><button class="wi" style="--x:95px;--y:-100px" onclick="fab();exX()">Leggibile (.xlsx)</button><button class="wi" style="--x:50px;--y:-156px" onclick="fab();backup()">Importa e account</button></div><button class="fab pri" id="bk" onclick="fab('bh')" aria-label="Backup"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></svg></button>`;
 $('#q').oninput=e=>{q=e.target.value;list()};list();scrollTo(0,0)}
-function fab(){$('#wh').classList.toggle('open')}
+function fab(id){['wh','bh'].forEach(k=>{const e=$('#'+k);if(!e)return;if(k===id)e.classList.toggle('open');else e.classList.remove('open')})}
+function toast(t){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';e.className='toast';document.body.appendChild(e)}e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',3000)}
 function list(){
 $('#chips').innerHTML=['',...cats()].map(c=>`<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${c?esc(c):'Tutte'}</button>`).join('');
 $$('#chips button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;list()});
@@ -158,7 +163,7 @@ let DL=null;
 function backup(){$('#app').innerHTML=`<div class="bar"><button onclick="home()">← Indietro</button></div><h1>Backup</h1><p class="mu">${R.length} ricette salvate.</p>
 <h2>Esporta</h2><p><button class="pri" onclick="exJ()">Completo (.json, con foto)</button></p><p><button onclick="exX()">Leggibile (.xlsx, senza foto)</button></p>
 <h2>Account</h2><p><button onclick="logout()">Esci</button></p><h2>Importa</h2><p class="mu">Le ricette con lo stesso titolo vengono sostituite, le altre aggiunte.</p><label class="chip" style="display:inline-block">Scegli file .json o .xlsx<input type="file" accept=".json,.xlsx" hidden onchange="imp(this)"></label><p id="msg"></p>`}
-const msg=t=>$('#msg').textContent=t,today=()=>new Date().toISOString().slice(0,10);
+const msg=t=>{const e=$('#msg');e?e.textContent=t:toast(t)},today=()=>new Date().toISOString().slice(0,10);
 async function dl(name,data){try{if(DL)await DL.save({filename:name,data});else{const u=URL.createObjectURL(new Blob([data])),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)}msg('Fatto')}catch(e){msg(e.code==='declined'?'Annullato.':'Errore: '+(e.message||e.code))}}
 async function exJ(){msg('Preparo il file…');for(const r of R)await loadPhotos(r);dl(`ricettario-${today()}.json`,JSON.stringify({v:1,recipes:R.map(r=>({...r,steps:r.steps.map(t=>({t:t.t,p:t.p||''}))}))}))}
 function exX(){const rows=R.map(r=>({Titolo:r.title,Categorie:r.cats.join(', '),Porzioni:r.base,Ingredienti:r.ing.map(i=>[i.q,i.u,i.n].join(' | ')).join('\n'),Procedimento:r.steps.map((s,i)=>(i+1)+'. '+s.t).join('\n'),Conservazione:r.cons,Extra:r.extra.map(e=>e.t+': '+e.x).join('\n\n')}));
