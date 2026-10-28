@@ -46,7 +46,7 @@ button{border:0;border-radius:10px;padding:10px 14px;background:var(--ch);cursor
 .ck{width:22px;height:22px;border:2px solid var(--mu);border-radius:6px;flex:none}
 .it.sel .ck{background:var(--ac);border-color:var(--ac);box-shadow:inset 0 0 0 3px var(--card)}
 .nm{flex:1}.bd{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--ch)}.bd.miss{background:var(--ac);color:#fff}.bd.got{background:#3f8f5a;color:#fff}
-.actb{position:fixed;left:0;right:0;bottom:var(--tb);z-index:19;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px;background:var(--card);border-top:1px solid var(--ln)}
+.actb{position:fixed;left:0;right:0;bottom:var(--tb);z-index:19;display:flex;flex-direction:column;gap:8px;padding:10px 14px;background:var(--card);border-top:1px solid var(--ln)}.actb div{display:flex;gap:8px}.actb button{flex:1;padding:10px 6px;white-space:nowrap;font-size:15px}.actb span{font-size:13px;color:var(--mu)}
 .toast{position:fixed;left:50%;bottom:calc(var(--tb) + 20px);transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:30;max-width:80%;font-size:14px;display:none}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0}
 .row.top{align-items:flex-start}
@@ -107,7 +107,7 @@ function cdraw(){const f=PN.filter(i=>i.st==='miss').sort((a,b)=>a.n.localeCompa
 $('#clist').innerHTML=f.length?rows(f):'<p class="mu">Il carrello è vuoto. Dalla dispensa seleziona gli ingredienti finiti e mandali qui.</p>';bind(cdraw);act();tb()}
 const sel=()=>{const c=!!$('#clist');return PN.filter(i=>SEL.has(i.id)&&(!c||i.st==='miss'))};
 function act(){const e=$('#act');if(!e)return;const n=sel().length;if(!n){pArm=false;e.innerHTML='';return}
-e.innerHTML=`<div class="actb"><span>${n} selezionati</span>`+($('#clist')?`<button class="pri" onclick="pto('got')">Acquistati</button><button onclick="pto('ok')">Rimuovi</button>`:`<button class="pri" onclick="pto('miss')">Nel carrello</button><button onclick="pto('ok')">Reimposta</button><button onclick="pdel()">${pArm?'Tocca ancora per eliminare':'Elimina'}</button>`)+`</div>`}
+e.innerHTML=`<div class="actb"><span>${n} ${n===1?'selezionato':'selezionati'}</span><div>`+($('#clist')?`<button class="pri" onclick="pto('got')">Acquistati</button><button onclick="pto('ok')">Rimuovi</button>`:`<button class="pri" onclick="pto('miss')">Nel carrello</button><button onclick="pto('ok')">Reimposta</button><button onclick="pdel()">${pArm?'Conferma':'Elimina'}</button>`)+`</div></div>`}
 function pto(st){sel().forEach(i=>{i.st=st;if(st==='got')i.at=Date.now();else delete i.at;pput(i)});SEL.clear();$('#clist')?cdraw():pdraw()}
 function pdel(){if(!pArm){pArm=true;return act()}sel().forEach(i=>F.deleteDoc(pd(i.id)).catch(console.error));const ids=new Set(sel().map(i=>i.id));PN=PN.filter(i=>!ids.has(i.id));SEL.clear();pArm=false;pdraw()}
 function padd(){const el=$('#pn'),L=el.value.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),have=new Set(PN.map(i=>i.n.toLowerCase()));
