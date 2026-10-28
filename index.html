@@ -107,7 +107,8 @@ function cdraw(){const f=PN.filter(i=>i.st==='miss').sort((a,b)=>a.n.localeCompa
 $('#clist').innerHTML=f.length?rows(f):'<p class="mu">Il carrello è vuoto. Dalla dispensa seleziona gli ingredienti finiti e mandali qui.</p>';bind(cdraw);act();tb()}
 const sel=()=>{const c=!!$('#clist');return PN.filter(i=>SEL.has(i.id)&&(!c||i.st==='miss'))};
 function act(){const e=$('#act');if(!e)return;const n=sel().length;if(!n){pArm=false;e.innerHTML='';return}
-e.innerHTML=`<div class="actb"><span>${n} ${n===1?'selezionato':'selezionati'}</span><div>`+($('#clist')?`<button class="pri" onclick="pto('got')">Acquistati</button><button onclick="pto('ok')">Rimuovi</button>`:`<button class="pri" onclick="pto('miss')">Nel carrello</button><button onclick="pto('ok')">Reimposta</button><button onclick="pdel()">${pArm?'Conferma':'Elimina'}</button>`)+`</div></div>`}
+e.innerHTML=`<div class="actb"><span>${n} ${n===1?'selezionato':'selezionati'}</span><div>`+($('#clist')?`<button class="pri" onclick="pto('got')">Acquistati</button><button onclick="unsel()">Annulla</button>`:`<button class="pri" onclick="pto('miss')">Nel carrello</button><button onclick="unsel()">Annulla</button><button onclick="pdel()">${pArm?'Conferma':'Elimina'}</button>`)+`</div></div>`}
+function unsel(){SEL.clear();pArm=false;$('#clist')?cdraw():pdraw()}
 function pto(st){sel().forEach(i=>{i.st=st;if(st==='got')i.at=Date.now();else delete i.at;pput(i)});SEL.clear();$('#clist')?cdraw():pdraw()}
 function pdel(){if(!pArm){pArm=true;return act()}sel().forEach(i=>F.deleteDoc(pd(i.id)).catch(console.error));const ids=new Set(sel().map(i=>i.id));PN=PN.filter(i=>!ids.has(i.id));SEL.clear();pArm=false;pdraw()}
 function padd(){const el=$('#pn'),L=el.value.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),have=new Set(PN.map(i=>i.n.toLowerCase()));
