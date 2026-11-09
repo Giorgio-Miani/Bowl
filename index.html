@@ -120,6 +120,10 @@ function pdel(){if(!pArm){pArm=true;return act()}sel().forEach(i=>F.deleteDoc(pd
 function padd(){const el=$('#pn'),L=el.value.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),have=new Set(PN.map(i=>i.n.toLowerCase()));
 for(let n of L){n=n.charAt(0).toUpperCase()+n.slice(1);if(have.has(n.toLowerCase()))continue;have.add(n.toLowerCase());const i={id:nid(),n,st:'ok'};PN.push(i);pput(i)}el.value='';pdraw()}
 const num=n=>(Math.round(n*100)/100).toLocaleString('it',{maximumFractionDigits:2});
+const PL={cucchiaio:'cucchiai',cucchiaino:'cucchiaini',tazza:'tazze',bicchiere:'bicchieri',pizzico:'pizzichi',spicchio:'spicchi',fetta:'fette',foglia:'foglie',rametto:'rametti',bustina:'bustine',noce:'noci',cubetto:'cubetti',manciata:'manciate',mazzetto:'mazzetti',barattolo:'barattoli',scatola:'scatole',goccia:'gocce',costa:'coste',pezzo:'pezzi',panetto:'panetti',vasetto:'vasetti',uovo:'uova',tuorlo:'tuorli',albume:'albumi',banana:'banane',mela:'mele',limone:'limoni',cipolla:'cipolle',carota:'carote',patata:'patate',pomodoro:'pomodori',zucchina:'zucchine',peperone:'peperoni',arancia:'arance',melanzana:'melanzane',biscotto:'biscotti'};
+const SG=Object.fromEntries(Object.entries(PL).map(([a,b])=>[b,a]));
+function pl(w,v){if(v==null||!w)return w;const n=Math.round(v*100)/100,lw=w.toLowerCase(),sg=PL[lw]?lw:SG[lw];if(!sg)return w;const o=n>1?PL[sg]:sg;return w[0]!==w[0].toLowerCase()?o[0].toUpperCase()+o.slice(1):o}
+const nm=(n,v)=>{const m=String(n).match(/^(\S+)(\s+(?:di|d')\s*.*)?$/i);return m?pl(m[1],v)+(m[2]||''):n};
 const cats=()=>[...new Set(R.flatMap(r=>r.cats))].sort();
 const hay=r=>[r.title,r.cats.join(' '),r.ing.map(i=>i.n||i.s||'').join(' '),r.steps.map(s=>s.t).join(' '),r.cons,r.extra.map(e=>e.t+' '+e.x).join(' ')].join(' ').toLowerCase();
 
@@ -144,7 +148,7 @@ function drawShow(){const r=cur,k=sv/r.base;
 $('#app').innerHTML=`<div class="bar"><button onclick="home()">← Indietro</button><button onclick="edit('${r.id}')">Modifica</button></div>
 <h1>${esc(r.title)}</h1><div>${r.cats.map(c=>`<span class="chip">${esc(c)}</span> `).join('')}</div>
 <h2>Ingredienti</h2><div class="sv"><button onclick="sv=Math.max(1,sv-1);drawShow()">−</button><span>${sv} ${sv===1?'porzione':'porzioni'}</span><button onclick="sv++;drawShow()">+</button></div>
-${r.ing.map(i=>i.s!==undefined?`<div class="ish">${esc(i.s)}</div>`:`<div class="ing"><span>${esc(i.n)}</span><b>${i.q!==''&&!isNaN(i.q)?num(i.q*k):''} ${esc(i.u)}</b></div>`).join('')}
+${r.ing.map(i=>i.s!==undefined?`<div class="ish">${esc(i.s)}</div>`:`<div class="ing"><span>${esc(nm(i.n,i.q!==''&&!isNaN(i.q)?i.q*k:null))}</span><b>${i.q!==''&&!isNaN(i.q)?num(i.q*k):''} ${esc(pl(i.u,i.q!==''&&!isNaN(i.q)?i.q*k:null))}</b></div>`).join('')}
 <h2>Procedimento</h2>${r.steps.map((s,i)=>`<div class="step"><span class="n">${i+1}</span><span class="pre">${esc(s.t)}</span>${s.p?`<img src="${s.p}" alt="">`:''}</div>`).join('')}
 ${r.cons?`<h2>Conservazione</h2><div class="pre">${esc(r.cons)}</div>`:''}
 ${r.extra.map(e=>`<h2>${esc(e.t)}</h2><div class="pre">${esc(e.x)}</div>`).join('')}
