@@ -49,6 +49,8 @@ button{border:0;border-radius:10px;padding:10px 14px;background:var(--ch);cursor
 .it.sel .ck{background:var(--ac);border-color:var(--ac);box-shadow:inset 0 0 0 3px var(--card)}
 .nm{flex:1}.bd{font-size:12px;padding:3px 10px;border-radius:99px;background:var(--ch)}.bd.miss{background:var(--ac);color:#fff}.bd.got{background:#3f8f5a;color:#fff}
 .actb{position:fixed;left:0;right:0;bottom:var(--tb);z-index:19;display:flex;flex-direction:column;gap:8px;padding:10px 14px;background:var(--card);border-top:1px solid var(--ln)}.actb div{display:flex;gap:8px}.actb button{flex:1;padding:10px 6px;white-space:nowrap;font-size:15px}.actb span{font-size:13px;color:var(--mu)}
+.dh{display:flex;align-items:center;justify-content:center;width:22px;height:40px;flex:none;color:var(--mu);touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+.ir.drag{background:var(--ch);border-radius:10px;box-shadow:0 2px 10px #0003}
 .toast{position:fixed;left:50%;bottom:calc(var(--tb) + 20px);transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:99px;z-index:30;max-width:80%;font-size:14px;display:none}
 .row{display:flex;gap:8px;align-items:center;margin:6px 0}
 .row.top{align-items:flex-start}
@@ -150,7 +152,7 @@ function rm(){if(!delArm){delArm=true;return drawShow()}const r=cur;R=R.filter(x
 async function edit(id){const r=R.find(x=>x.id===id);if(r)await loadPhotos(r);
 d=r?JSON.parse(JSON.stringify(r)):{id:'r'+Date.now(),title:'',cats:[],base:2,ing:[{q:'',u:'',n:''}],steps:[{t:'',p:''}],cons:'',extra:[]};drawEdit()}
 function sync(){d.title=$('#t').value.trim();d.cats=$('#c').value.split(',').map(s=>s.trim()).filter(Boolean);d.base=Math.max(1,parseInt($('#b').value)||2);
-d.ing=$$('.ir').map(r=>({q:r.children[0].value.replace(',','.'),u:r.children[1].value.trim(),n:r.children[2].value.trim()}));
+d.ing=$$('.ir').map(r=>{const i=r.querySelectorAll('input');return{q:i[0].value.replace(',','.'),u:i[1].value.trim(),n:i[2].value.trim()}});
 $$('.st textarea').forEach((t,i)=>d.steps[i].t=t.value);d.cons=$('#cons').value;
 $$('.ex').forEach((e,i)=>{d.extra[i].t=e.children[0].value;d.extra[i].x=e.children[1].value})}
 function drawEdit(){
@@ -160,13 +162,20 @@ $('#app').innerHTML=`<div class="bar"><button onclick="d.title?show(d.id)||0:hom
 <h2>Categorie</h2><input id="c" placeholder="es. dolce, salato, aperitivo" value="${esc(d.cats.join(', '))}">
 <div class="chips">${cats().map(c=>`<button class="chip" onclick="addCat('${esc(c).replace(/'/g,"\\'")}')">${esc(c)}</button>`).join('')}</div>
 <h2>Ingredienti</h2><div class="row"><span>Quantità per</span><input id="b" type="number" min="1" style="width:70px" value="${d.base}"><span>porzioni</span></div>
-${d.ing.map((i,x)=>`<div class="row ir"><input inputmode="decimal" placeholder="Qtà" style="width:68px" value="${esc(i.q)}"><input placeholder="Unità" style="width:78px" value="${esc(i.u)}"><input placeholder="Ingrediente" value="${esc(i.n)}"><button onclick="sync();d.ing.splice(${x},1);drawEdit()">×</button></div>`).join('')}
+${d.ing.map((i,x)=>`<div class="row ir"><span class="dh" onpointerdown="dragIng(event)" aria-label="Sposta"><svg viewBox="0 0 10 16" width="12" height="20" fill="currentColor"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/><circle cx="2.5" cy="13" r="1.5"/><circle cx="7.5" cy="13" r="1.5"/></svg></span><input inputmode="decimal" placeholder="Qtà" style="width:60px" value="${esc(i.q)}"><input placeholder="Unità" style="width:68px" value="${esc(i.u)}"><input placeholder="Ingrediente" value="${esc(i.n)}"><button onclick="sync();d.ing.splice(rowIdx(this),1);drawEdit()">×</button></div>`).join('')}
 <button onclick="sync();d.ing.push({q:'',u:'',n:''});drawEdit()">+ Ingrediente</button>
 <h2>Passaggi</h2>${d.steps.map((s,x)=>`<div class="step st"><div class="bar"><b>Passo ${x+1}</b><button onclick="sync();d.steps.splice(${x},1);drawEdit()">×</button></div><textarea placeholder="Descrivi il passaggio…">${esc(s.t)}</textarea>${s.p?`<img src="${s.p}" alt=""><button style="margin-top:8px" onclick="sync();d.steps[${x}].p='';d.steps[${x}].pid='';drawEdit()">Rimuovi foto</button>`:`<label class="chip" style="display:inline-block;margin-top:8px">Aggiungi foto<input type="file" accept="image/*" hidden onchange="photo(this,${x})"></label>`}</div>`).join('')}
 <button onclick="sync();d.steps.push({t:'',p:''});drawEdit()">+ Passaggio</button>
 <h2>Conservazione</h2><textarea id="cons" placeholder="Come e per quanto si conserva…">${esc(d.cons)}</textarea>
 <h2>Altre sezioni</h2>${d.extra.map((e,x)=>`<div class="step ex"><input placeholder="Titolo (es. Consigli, Varianti)" value="${esc(e.t)}" style="margin-bottom:8px"><textarea>${esc(e.x)}</textarea><button style="margin-top:8px" onclick="sync();d.extra.splice(${x},1);drawEdit()">Rimuovi sezione</button></div>`).join('')}
 <button onclick="sync();d.extra.push({t:'',x:''});drawEdit()">+ Sezione extra</button>`;scrollTo(0,0)}
+function rowIdx(el){return $$('.ir').indexOf(el.closest('.ir'))}
+function dragIng(e){const h=e.currentTarget,row=h.closest('.ir');e.preventDefault();try{h.setPointerCapture(e.pointerId)}catch(_){}row.classList.add('drag');
+const mv=ev=>{const y=ev.clientY;if(y<90)scrollBy(0,-14);else if(y>innerHeight-90)scrollBy(0,14);
+const rows=$$('.ir').filter(r=>r!==row);let before=null;for(const r of rows){const b=r.getBoundingClientRect();if(y<b.top+b.height/2){before=r;break}}
+if(before){if(row.nextElementSibling!==before)before.parentNode.insertBefore(row,before)}else if(rows.length&&rows[rows.length-1].nextElementSibling!==row)rows[rows.length-1].after(row)};
+const up=()=>{row.classList.remove('drag');h.removeEventListener('pointermove',mv);h.removeEventListener('pointerup',up);h.removeEventListener('pointercancel',up)};
+h.addEventListener('pointermove',mv);h.addEventListener('pointerup',up);h.addEventListener('pointercancel',up)}
 function addCat(c){const i=$('#c'),a=i.value.split(',').map(s=>s.trim()).filter(Boolean);if(!a.includes(c))a.push(c);i.value=a.join(', ')}
 function photo(inp,x){const f=inp.files[0];if(!f)return;sync();const im=new Image(),u=URL.createObjectURL(f);
 im.onload=()=>{const s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*s;c.height=im.height*s;c.getContext('2d').drawImage(im,0,0,c.width,c.height);d.steps[x].p=c.toDataURL('image/jpeg',.75);d.steps[x].pid=nid();URL.revokeObjectURL(u);drawEdit()};im.src=u}
