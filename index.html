@@ -104,10 +104,10 @@ const eff=i=>i.st==='got'?(i.at&&Date.now()-i.at<864e5?'got':'ok'):i.st;
 setInterval(()=>{if($('#plist'))pdraw()},60000);
 function rows(f){return f.map(i=>`<div class="it${SEL.has(i.id)?' sel':''}" data-id="${i.id}"><span class="ck"></span><span class="nm">${esc(i.n)}</span>${ST[eff(i)]?`<span class="bd ${eff(i)}">${ST[eff(i)]}</span>`:''}</div>`).join('')}
 function bind(fn){$$('.it').forEach(e=>e.onclick=()=>{SEL.has(e.dataset.id)?SEL.delete(e.dataset.id):SEL.add(e.dataset.id);pArm=false;fn()})}
-function pantry(){cur=null;tab='d';$('#app').innerHTML=`${hdr('Dispensa')}<div class="row"><input id="pn" placeholder="Aggiungi ingredienti (separa con virgola)"><button class="pri" onclick="padd()">Aggiungi</button></div><input id="pq" type="search" placeholder="Cerca in dispensa" value="${esc(pq)}"><div id="plist"></div><div id="act"></div><div class="tabs" id="tabs"></div>`;
-$('#pq').oninput=e=>{pq=e.target.value;pdraw()};$('#pn').onkeydown=e=>{if(e.key==='Enter')padd()};pdraw();scrollTo(0,0)}
+function pantry(){cur=null;tab='d';$('#app').innerHTML=`${hdr('Dispensa')}<div class="row"><input id="pq" type="search" enterkeyhint="done" placeholder="Cerca o aggiungi ingrediente" value="${esc(pq)}"><button class="pri" onclick="padd()">Aggiungi</button></div><div id="plist"></div><div id="act"></div><div class="tabs" id="tabs"></div>`;
+$('#pq').oninput=e=>{pq=e.target.value;pdraw()};$('#pq').onkeydown=e=>{if(e.key==='Enter')padd()};pdraw();scrollTo(0,0)}
 function pdraw(){const w=pq.toLowerCase().split(/\s+/).filter(Boolean),f=PN.filter(i=>w.every(x=>i.n.toLowerCase().includes(x))).sort((a,b)=>a.n.localeCompare(b.n));
-$('#plist').innerHTML=f.length?rows(f):`<p class="mu">${PN.length?'Nessun ingrediente trovato.':'La dispensa è vuota. Aggiungi i tuoi ingredienti qui sopra.'}</p>`;bind(pdraw);act();tb()}
+$('#plist').innerHTML=f.length?rows(f):`<p class="mu">${PN.length?(pq.trim()?'Nessun ingrediente trovato. Tocca Aggiungi per inserire «'+esc(pq.trim())+'».':'Nessun ingrediente trovato.'):'La dispensa è vuota. Scrivi un ingrediente qui sopra e tocca Aggiungi.'}</p>`;bind(pdraw);act();tb()}
 function cart(){cur=null;tab='s';$('#app').innerHTML=`${hdr('Spesa')}<div id="clist"></div><div id="act"></div><div class="tabs" id="tabs"></div>`;cdraw();scrollTo(0,0)}
 function cdraw(){const f=PN.filter(i=>i.st==='miss').sort((a,b)=>a.n.localeCompare(b.n));
 $('#clist').innerHTML=f.length?rows(f):'<p class="mu">Il carrello è vuoto. Dalla dispensa seleziona gli ingredienti finiti e mandali qui.</p>';bind(cdraw);act();tb()}
@@ -117,8 +117,8 @@ e.innerHTML=`<div class="actb"><span>${n} ${n===1?'selezionato':'selezionati'}</
 function unsel(){SEL.clear();pArm=false;$('#clist')?cdraw():pdraw()}
 function pto(st){sel().forEach(i=>{i.st=st;if(st==='got')i.at=Date.now();else delete i.at;pput(i)});SEL.clear();$('#clist')?cdraw():pdraw()}
 function pdel(){if(!pArm){pArm=true;return act()}sel().forEach(i=>F.deleteDoc(pd(i.id)).catch(console.error));const ids=new Set(sel().map(i=>i.id));PN=PN.filter(i=>!ids.has(i.id));SEL.clear();pArm=false;pdraw()}
-function padd(){const el=$('#pn'),L=el.value.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),have=new Set(PN.map(i=>i.n.toLowerCase()));
-for(let n of L){n=n.charAt(0).toUpperCase()+n.slice(1);if(have.has(n.toLowerCase()))continue;have.add(n.toLowerCase());const i={id:nid(),n,st:'ok'};PN.push(i);pput(i)}el.value='';pdraw()}
+function padd(){const el=$('#pq'),L=el.value.split(/[,;\n]/).map(s=>s.trim()).filter(Boolean),have=new Set(PN.map(i=>i.n.toLowerCase()));
+for(let n of L){n=n.charAt(0).toUpperCase()+n.slice(1);if(have.has(n.toLowerCase()))continue;have.add(n.toLowerCase());const i={id:nid(),n,st:'ok'};PN.push(i);pput(i)}el.value='';pq='';pdraw()}
 const num=n=>(Math.round(n*100)/100).toLocaleString('it',{maximumFractionDigits:2});
 const PL={cucchiaio:'cucchiai',cucchiaino:'cucchiaini',tazza:'tazze',bicchiere:'bicchieri',pizzico:'pizzichi',spicchio:'spicchi',fetta:'fette',foglia:'foglie',rametto:'rametti',bustina:'bustine',noce:'noci',cubetto:'cubetti',manciata:'manciate',mazzetto:'mazzetti',barattolo:'barattoli',scatola:'scatole',goccia:'gocce',costa:'coste',pezzo:'pezzi',panetto:'panetti',vasetto:'vasetti',uovo:'uova',tuorlo:'tuorli',albume:'albumi',banana:'banane',mela:'mele',limone:'limoni',cipolla:'cipolle',carota:'carote',patata:'patate',pomodoro:'pomodori',zucchina:'zucchine',peperone:'peperoni',arancia:'arance',melanzana:'melanzane',biscotto:'biscotti'};
 const SG=Object.fromEntries(Object.entries(PL).map(([a,b])=>[b,a]));
